@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Super Trunfo da História</title>
+<style>
+:root{--bg:#14110f;--bg2:#241c15;--gold:#d4a84b;--ink:#f3e9d2;--mut:#a8987a;--win:#3fbf6f;--lose:#e5484d;--draw:#e0b13a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{font-family:Georgia,'Times New Roman',serif;background:radial-gradient(circle at 50% 0,var(--bg2),var(--bg) 70%);color:var(--ink);min-height:100vh}
+h1,h2,h3{font-weight:normal}
+.screen{display:none;max-width:1000px;margin:0 auto;padding:20px 14px 40px}
+.screen.active{display:block}
+.title{text-align:center;margin:20px 0 6px;font-size:clamp(28px,6vw,48px);color:var(--gold);letter-spacing:2px;text-shadow:0 2px 12px #000}
+.sub{text-align:center;color:var(--mut);margin-bottom:26px}
+.themes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.theme{background:linear-gradient(160deg,#2f2418,#1b140d);border:2px solid #4a3a22;border-radius:16px;padding:22px;cursor:pointer;text-align:center;transition:.25s;box-shadow:0 8px 20px #0008}
+.theme:hover{transform:translateY(-6px);border-color:var(--gold);box-shadow:0 14px 30px #d4a84b33}
+.theme .em{font-size:54px}
+.theme h3{font-size:22px;color:var(--gold);margin:8px 0}
+.theme p{color:var(--mut);font-size:14px;line-height:1.4}
+.diffs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;max-width:760px;margin:0 auto 26px}
+.diff{background:#00000055;border:2px solid #4a3a22;border-radius:12px;padding:12px;cursor:pointer;text-align:center;transition:.2s;color:var(--ink);font-family:inherit}
+.diff b{display:block;font-size:18px;margin-bottom:4px}
+.diff span{font-size:12px;color:var(--mut);line-height:1.3;display:block}
+.diff:hover{border-color:var(--gold)}
+.diff.on{border-color:var(--gold);background:#d4a84b26;box-shadow:0 0 16px #d4a84b44}
+.lbl{text-align:center;color:var(--gold);letter-spacing:2px;text-transform:uppercase;font-size:13px;margin-bottom:10px}
+.turn{text-align:center;margin-bottom:12px;font-size:15px}
+.turn span{display:inline-block;padding:6px 18px;border-radius:20px;border:1px solid var(--gold);background:#00000066;color:var(--gold)}
+.turn span.bot{border-color:var(--lose);color:#ff8f93}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.pl{background:#00000055;border:1px solid #4a3a22;border-radius:12px;padding:8px 14px;min-width:150px}
+.pl b{display:block;font-size:13px;color:var(--mut);letter-spacing:1px;text-transform:uppercase}
+.hearts{font-size:22px;letter-spacing:3px;min-height:28px}
+.hearts .off{filter:grayscale(1) opacity(.3)}
+.hearts.hit{animation:shake .5s}
+.mid{text-align:center;font-size:14px;color:var(--mut)}
+.mid strong{color:var(--gold);display:block;font-size:16px}
+.table{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start;justify-items:center}
+.slot h4{text-align:center;color:var(--mut);font-weight:normal;margin-bottom:8px;letter-spacing:1px;font-size:13px;text-transform:uppercase}
+.vs{align-self:center;font-size:30px;color:var(--gold);text-shadow:0 0 12px #d4a84b88}
+.card{width:270px;height:410px;perspective:1000px}
+.inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d}
+.card.flipped .inner{transform:rotateY(180deg)}
+.face,.back{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px}
+.face{background:linear-gradient(170deg,#f6ecd0,#e2cf9f);color:#2a1d0c;border:5px solid var(--gold);box-shadow:0 12px 30px #000a,inset 0 0 30px #8a6a2a55;padding:12px;display:flex;flex-direction:column;transform:rotateY(180deg)}
+.card.front .face{transform:none}
+.card.front .back{display:none}
+.back{background:repeating-linear-gradient(45deg,#3a1f14 0 12px,#2c170e 12px 24px);border:5px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:70px;box-shadow:0 12px 30px #000a}
+.art{height:96px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:56px;background:radial-gradient(circle,#fff8 0,transparent 70%),linear-gradient(135deg,#a8843a,#5a3d14);border:2px solid #5a3d14}
+.cn{font-size:19px;font-weight:bold;text-align:center;margin-top:8px;line-height:1.1}
+.ct{text-align:center;font-size:11px;font-style:italic;color:#6b4d1c;margin:2px 0 6px;text-transform:uppercase;letter-spacing:1px}
+.cd{font-size:12px;line-height:1.3;text-align:justify;flex:1;overflow:hidden;color:#3d2b10}
+.attrs{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.at{display:flex;flex-direction:column;background:#2a1d0c14;border:2px solid transparent;border-radius:8px;padding:4px 8px;font-size:12px;transition:.2s}
+.at .r{display:flex;justify-content:space-between;font-weight:bold}
+.bar{height:6px;background:#2a1d0c30;border-radius:3px;margin-top:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#8a5a14,#d4a84b);border-radius:3px}
+.card.pick .at{cursor:pointer}
+.card.pick .at:hover{background:#d4a84b55;border-color:#8a5a14;transform:scale(1.03)}
+.at.sel{border-color:#2a1d0c;background:#d4a84b88}
+.at.won{border-color:var(--win);background:#3fbf6f44}
+.at.lost{border-color:var(--lose);background:#e5484d33}
+.at.tie{border-color:var(--draw);background:#e0b13a44}
+.card.glow .face{animation:glow 1s ease-in-out infinite alternate}
+.banner{text-align:center;margin:18px 0 6px;min-height:64px}
+.banner .msg{display:inline-block;padding:10px 34px;font-size:30px;border-radius:12px;animation:pop .5s;letter-spacing:2px}
+.msg.win{background:#3fbf6f26;color:var(--win);border:2px solid var(--win)}
+.msg.lose{background:#e5484d26;color:var(--lose);border:2px solid var(--lose)}
+.msg.draw{background:#e0b13a26;color:var(--draw);border:2px solid var(--draw)}
+.hint{text-align:center;color:var(--mut);font-size:14px;min-height:20px}
+.btn{background:linear-gradient(180deg,#e6bd5c,#b78a2c);color:#20150a;border:none;border-radius:10px;padding:12px 28px;font:bold 16px Georgia,serif;cursor:pointer;box-shadow:0 5px 14px #0007;transition:.2s}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.btn.sec{background:#0000;color:var(--gold);border:2px solid var(--gold)}
+.actions{text-align:center;margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:10;padding:16px}
+.modal.show{display:flex}
+.box{background:linear-gradient(160deg,#33261a,#1a120b);border:3px solid var(--gold);border-radius:20px;padding:34px 30px;text-align:center;max-width:420px;animation:pop .5s}
+.box .big{font-size:70px}
+.box h2{font-size:36px;margin:6px 0}
+.box.v h2{color:var(--win)}
+.box.d h2{color:var(--lose)}
+.box p{color:var(--mut);margin-bottom:20px;line-height:1.4}
+.who{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:8px;background:#2a1d0c;color:#f3e9d2;font-size:10px;font-weight:normal;letter-spacing:.5px;text-transform:uppercase;vertical-align:middle}
+.who.bot{background:#8b2226}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes pop{0%{transform:scale(.5);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes glow{from{box-shadow:0 12px 30px #000a,0 0 8px #d4a84b}to{box-shadow:0 12px 30px #000a,0 0 30px #ffd97a}}
+@keyframes deal{0%{transform:translateY(-40px) rotate(-6deg);opacity:0}100%{transform:none;opacity:1}}
+.deal{animation:deal .5s}
+@media(max-width:640px){.table{grid-template-columns:1fr;gap:6px}.vs{font-size:22px}.card{width:min(270px,88vw)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<section id="sMenu" class="screen active">
+  <h1 class="title">⚜ SUPER TRUNFO DA HISTÓRIA ⚜</h1>
+  <p class="sub">Escolha a dificuldade e um acontecimento histórico para enfrentar o Bot. Cada um começa com 5 vidas!</p>
+  <div class="lbl">1. Dificuldade</div>
+  <div class="diffs" id="diffs"></div>
+  <div class="lbl">2. Acontecimento histórico</div>
+  <div class="themes" id="themes"></div>
+</section>
+
+<section id="sGame" class="screen">
+  <div class="hud">
+    <div class="pl"><b>Você</b><div class="hearts" id="hpP"></div></div>
+    <div class="mid"><strong id="themeName"></strong>Rodada <span id="roundN">1</span></div>
+    <div class="pl"><b>Bot</b><div class="hearts" id="hpB"></div></div>
+  </div>
+  <div class="turn" id="turnBadge"></div>
+  <div class="table">
+    <div class="slot"><h4>Sua carta</h4><div id="cardP"></div></div>
+    <div class="vs">⚔</div>
+    <div class="slot"><h4>Carta do Bot</h4><div id="cardB"></div></div>
+  </div>
+  <div class="banner" id="banner"></div>
+  <div class="hint" id="hint"></div>
+  <div class="actions">
+    <button class="btn" id="btnNext" style="display:none">Próxima rodada ▶</button>
+    <button class="btn sec" id="btnMenu">Trocar tema</button>
+  </div>
+</section>
+
+<div class="modal" id="modal">
+  <div class="box" id="box">
+    <div class="big" id="endEm"></div>
+    <h2 id="endT"></h2>
+    <p id="endP"></p>
+    <div class="actions">
+      <button class="btn" id="btnRestart">Jogar novamente</button>
+      <button class="btn sec" id="btnMenu2">Trocar tema</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var ATTRS=[
+  {k:"pol",n:"Poder Político",e:"🏛"},
+  {k:"pop",n:"Apoio Popular",e:"👥"},
+  {k:"ide",n:"Influência Ideológica",e:"💡"}
+];
+
+var THEMES=[
+{id:"roma",em:"🏛",name:"Império Romano",desc:"Césares, legiões e o poder que dominou o Mediterrâneo por séculos.",
+cards:[
+{n:"Júlio César",e:"🗡",t:"Ditador e general",d:"Conquistou a Gália, cruzou o Rubicão e concentrou o poder em Roma. Foi assassinado nos Idos de Março de 44 a.C.",pol:92,pop:85,ide:78},
+{n:"Augusto",e:"👑",t:"Primeiro imperador",d:"Herdeiro de César, encerrou as guerras civis e fundou o Principado, inaugurando a Pax Romana.",pol:98,pop:88,ide:90},
+{n:"Nero",e:"🔥",t:"Imperador (54–68 d.C.)",d:"Famoso pelo luxo e pelas perseguições. Foi acusado de ser omisso no Grande Incêndio de Roma e perdeu o apoio do Senado.",pol:70,pop:35,ide:22},
+{n:"Marco Aurélio",e:"📜",t:"Imperador-filósofo",d:"Último dos 'Cinco Bons Imperadores'. Governou em guerra e escreveu as Meditações, obra-prima do estoicismo.",pol:82,pop:80,ide:95},
+{n:"Cleópatra VII",e:"🐍",t:"Rainha do Egito",d:"Aliada de César e Marco Antônio, tentou preservar a independência egípcia diante da expansão de Roma.",pol:68,pop:72,ide:60},
+{n:"Constantino",e:"✝",t:"Imperador cristão",d:"Legalizou o cristianismo pelo Édito de Milão, fundou Constantinopla e mudou o rumo do Império.",pol:90,pop:78,ide:96},
+{n:"Spártaco",e:"⛓",t:"Líder rebelde",d:"Gladiador que liderou a maior revolta de escravizados contra Roma, reunindo dezenas de milhares de seguidores.",pol:38,pop:94,ide:80},
+{n:"Legiões Romanas",e:"🛡",t:"Exército imperial",d:"Máquina militar disciplinada que construiu estradas, forts e cidades, sustentando a expansão e a ordem do Império.",pol:88,pop:60,ide:55},
+{n:"Senado Romano",e:"🏺",t:"Instituição republicana",d:"Conselho de patrícios que guiou a política, as finanças e a diplomacia da República, perdendo força com o Império.",pol:75,pop:48,ide:70},
+{n:"Átila, o Huno",e:"🐎",t:"Rei dos Hunos",d:"O 'Flagelo de Deus' cobrou tributos de Roma e invadiu Gália e Itália, acelerando a crise do Império do Ocidente.",pol:72,pop:40,ide:30}
+]},
+{id:"franca",em:"⚜",name:"Revolução Francesa",desc:"Liberdade, igualdade e fraternidade: o fim do Antigo Regime.",
+cards:[
+{n:"Luís XVI",e:"👑",t:"Rei da França",d:"Monarca absolutista incapaz de resolver a crise financeira. Foi deposto e guilhotinado em 1793.",pol:60,pop:15,ide:20},
+{n:"Maria Antonieta",e:"💎",t:"Rainha consorte",d:"Austríaca de origem, símbolo do luxo da corte e alvo da fúria popular. Executada em outubro de 1793.",pol:35,pop:10,ide:18},
+{n:"Robespierre",e:"⚖",t:"Líder jacobino",d:"O 'Incorruptível' liderou o Comitê de Salvação Pública e o Terror, até ser guilhotinado em 1794.",pol:92,pop:75,ide:90},
+{n:"Danton",e:"🗣",t:"Orador revolucionário",d:"Grande orador da Convenção, defendeu a mobilização da nação e depois pediu moderação. Foi executado por Robespierre.",pol:78,pop:82,ide:70},
+{n:"Marat",e:"📰",t:"Jornalista radical",d:"Editor de 'O Amigo do Povo', denunciava inimigos da revolução. Foi assassinado na banheira por Charlotte Corday.",pol:55,pop:90,ide:82},
+{n:"Napoleão Bonaparte",e:"🎖",t:"General e futuro imperador",d:"Ascendeu com o Golpe do 18 Brumário, encerrou a fase revolucionária e difundiu ideais pela Europa.",pol:98,pop:88,ide:75},
+{n:"Lafayette",e:"🌐",t:"Herói de duas revoluções",d:"Lutou na independência americana e na França defendeu a monarquia constitucional e a Declaração dos Direitos.",pol:65,pop:70,ide:78},
+{n:"Sans-culottes",e:"🔱",t:"Povo de Paris",d:"Artesãos, operários e comerciantes parisienses que pressionaram a Convenção com insurreições e exigiram medidas radicais.",pol:45,pop:98,ide:72},
+{n:"Abade Sieyès",e:"📖",t:"Teórico do Terceiro Estado",d:"Autor de 'O que é o Terceiro Estado?', inspirou a criação da Assembleia Nacional em 1789.",pol:62,pop:55,ide:92},
+{n:"Girondinos",e:"🏛",t:"Facção moderada",d:"Republicanos ligados à burguesia provincial, defenderam a guerra e a moderação, mas perderam para os jacobinos em 1793.",pol:58,pop:50,ide:66}
+]},
+{id:"guerra",em:"🌍",name:"Segunda Guerra Mundial",desc:"O maior conflito da história: potências, líderes e ideologias em choque.",
+cards:[
+{n:"Adolf Hitler",e:"⛔",t:"Führer da Alemanha nazista",d:"Ditador que iniciou a guerra e promoveu o Holocausto. Sua ideologia devastou a Europa e terminou em derrota total.",pol:96,pop:55,ide:80},
+{n:"Winston Churchill",e:"✌",t:"Premiê britânico",d:"Liderou o Reino Unido na resistência à Alemanha e inspirou a nação com seus discursos nos dias mais sombrios.",pol:85,pop:90,ide:88},
+{n:"Franklin Roosevelt",e:"🗽",t:"Presidente dos EUA",d:"Transformou os EUA no 'arsenal da democracia' e ajudou a criar a ONU. Governou por quatro mandatos.",pol:94,pop:92,ide:90},
+{n:"Josef Stálin",e:"☭",t:"Líder soviético",d:"Comandou a URSS contra a invasão alemã e emergiu como superpotência, à custa de repressão e milhões de vítimas.",pol:95,pop:50,ide:82},
+{n:"Charles de Gaulle",e:"🇫🇷",t:"Líder da França Livre",d:"Chamou os franceses à resistência a partir de Londres e liderou o governo provisório após a Libertação.",pol:68,pop:78,ide:84},
+{n:"Benito Mussolini",e:"🦅",t:"Il Duce da Itália",d:"Criador do fascismo, aliou-se a Hitler e levou a Itália a derrotas até ser deposto e executado em 1945.",pol:78,pop:38,ide:60},
+{n:"Hirohito",e:"🌸",t:"Imperador do Japão",d:"Figura divina para os japoneses durante a guerra. Anunciou a rendição em 1945 após Hiroshima e Nagasaki.",pol:65,pop:85,ide:75},
+{n:"Resistência Francesa",e:"🕊",t:"Movimento clandestino",d:"Redes de sabotadores, espiões e jornais clandestinos que combateram a ocupação nazista e apoiaram o Dia D.",pol:35,pop:92,ide:88},
+{n:"Mahatma Gandhi",e:"🧘",t:"Líder da Índia",d:"Manteve a campanha não violenta pela independência indiana, pressionando o Império Britânico durante o conflito.",pol:50,pop:98,ide:97},
+{n:"Eixo (Alemanha-Itália-Japão)",e:"⚔",t:"Aliança militar",d:"Pacto tripartite que uniu regimes autoritários em busca de expansão, oposto aos Aliados de 1939 a 1945.",pol:82,pop:42,ide:52}
+]},
+{id:"grecia",em:"🏺",name:"Grécia Antiga",desc:"Democracia, filosofia e guerras entre cidades-estado que moldaram o Ocidente.",
+cards:[
+{n:"Péricles",e:"🏛",t:"Estadista de Atenas",d:"Líder da era de ouro ateniense, ampliou a democracia, financiou o Partenon e comandou Atenas no início da Guerra do Peloponeso.",pol:90,pop:88,ide:85},
+{n:"Alexandre, o Grande",e:"⚔",t:"Rei da Macedônia",d:"Conquistou o Império Persa até a Índia antes dos 33 anos e espalhou a cultura grega, dando origem ao período helenístico.",pol:97,pop:82,ide:80},
+{n:"Sócrates",e:"❓",t:"Filósofo ateniense",d:"Criador do método de perguntas que busca a verdade. Condenado à morte por 'corromper a juventude', bebeu cicuta em 399 a.C.",pol:20,pop:45,ide:98},
+{n:"Leônidas I",e:"🛡",t:"Rei de Esparta",d:"Comandou 300 espartanos e aliados nas Termópilas contra o exército persa de Xerxes, tornando-se símbolo de coragem.",pol:70,pop:80,ide:65},
+{n:"Aristóteles",e:"📚",t:"Filósofo e pensador",d:"Discípulo de Platão e tutor de Alexandre, escreveu sobre lógica, política e ciência, influenciando o pensamento por séculos.",pol:40,pop:50,ide:96},
+{n:"Platão",e:"🦉",t:"Fundador da Academia",d:"Discípulo de Sócrates, propôs em 'A República' um Estado governado por filósofos e criou a teoria das Ideias.",pol:45,pop:48,ide:97},
+{n:"Temístocles",e:"⚓",t:"General naval",d:"Convenceu Atenas a construir uma frota e venceu os persas em Salamina, em 480 a.C., salvando a Grécia.",pol:78,pop:74,ide:60},
+{n:"Cleístenes",e:"🗳",t:"Pai da democracia",d:"Reformou Atenas em 508 a.C., reorganizando a cidadania em tribos e criando as bases da democracia ateniense.",pol:75,pop:70,ide:92},
+{n:"Esparta",e:"🐺",t:"Cidade-estado militarista",d:"Sociedade voltada à guerra, com treinamento militar desde a infância. Venceu Atenas na Guerra do Peloponeso.",pol:85,pop:55,ide:50},
+{n:"Assembleia de Atenas",e:"🗣",t:"Ecclésia democrática",d:"Reunião dos cidadãos atenienses que votava leis, guerras e tratados diretamente, praticando a democracia direta.",pol:65,pop:92,ide:88}
+]},
+{id:"friaguerra",em:"☢",name:"Guerra Fria",desc:"EUA e URSS em disputa global por influência, sem confronto direto entre as duas potências.",
+cards:[
+{n:"John F. Kennedy",e:"🚀",t:"Presidente dos EUA",d:"Enfrentou a Crise dos Mísseis de 1962 e lançou o programa Apollo. Foi assassinado em Dallas em 1963.",pol:85,pop:94,ide:82},
+{n:"Nikita Khrushchev",e:"🥾",t:"Líder soviético",d:"Denunciou os crimes de Stálin, instalou mísseis em Cuba e recuou após negociar com Kennedy.",pol:82,pop:55,ide:68},
+{n:"Ronald Reagan",e:"🎬",t:"Presidente dos EUA",d:"Ampliou o gasto militar, combateu o comunismo e depois negociou o desarmamento nuclear com Gorbachev.",pol:88,pop:86,ide:84},
+{n:"Mikhail Gorbachev",e:"🕊",t:"Último líder soviético",d:"Lançou a Glasnost e a Perestroika. Suas reformas aceleraram o fim da URSS em 1991.",pol:80,pop:60,ide:90},
+{n:"Fidel Castro",e:"🌴",t:"Líder de Cuba",d:"Liderou a Revolução Cubana de 1959 e alinhou a ilha à URSS, resistindo ao embargo americano por décadas.",pol:90,pop:78,ide:80},
+{n:"Mao Tsé-Tung",e:"🐉",t:"Líder da China comunista",d:"Fundou a República Popular da China em 1949 e conduziu o Grande Salto Adiante e a Revolução Cultural.",pol:96,pop:70,ide:92},
+{n:"Ho Chi Minh",e:"🎋",t:"Líder do Vietnã",d:"Lutou pela independência contra França e EUA. Sua resistência dividiu o Vietnã e marcou a Guerra Fria na Ásia.",pol:75,pop:90,ide:85},
+{n:"OTAN",e:"🛰",t:"Aliança militar ocidental",d:"Criada em 1949, uniu EUA e países europeus em defesa mútua contra a ameaça soviética.",pol:88,pop:62,ide:74},
+{n:"Muro de Berlim",e:"🧱",t:"Símbolo da divisão",d:"Erguido em 1961, separou Berlim Oriental e Ocidental. Sua queda, em 1989, simbolizou o fim da Guerra Fria.",pol:65,pop:92,ide:95},
+{n:"Lech Wałęsa",e:"✊",t:"Líder do Solidariedade",d:"Operário polonês que liderou o sindicato Solidariedade e enfraqueceu o regime comunista na Polônia.",pol:55,pop:96,ide:78}
+]},
+{id:"brasil",em:"🇧🇷",name:"Independência do Brasil",desc:"O caminho que separou o Brasil de Portugal, entre 1808 e 1824.",
+cards:[
+{n:"Dom Pedro I",e:"🗡",t:"Príncipe e 1º imperador",d:"Herdeiro do trono português, proclamou a Independência às margens do Ipiranga, em 7 de setembro de 1822.",pol:96,pop:82,ide:78},
+{n:"José Bonifácio",e:"🧠",t:"Patriarca da Independência",d:"Ministro de Pedro I e principal articulador político do processo, defendeu uma monarquia forte e unida.",pol:88,pop:60,ide:92},
+{n:"Dona Leopoldina",e:"📜",t:"Princesa e regente",d:"Em 2 de setembro de 1822, assinou a decisão que apoiou a independência e enviou a carta a Pedro.",pol:78,pop:74,ide:85},
+{n:"Maria Quitéria",e:"🎖",t:"Soldada baiana",d:"Vestiu-se de homem para lutar nas guerras da Independência na Bahia, tornando-se heroína nacional.",pol:25,pop:90,ide:80},
+{n:"Gonçalves Ledo",e:"✒",t:"Jornalista maçom",d:"Liderou a ala liberal, defendeu a convocação da Constituinte e o 'Fico' e disputou a influência com Bonifácio.",pol:65,pop:70,ide:88},
+{n:"Dom João VI",e:"⛵",t:"Rei de Portugal e Brasil",d:"Transferiu a corte para o Rio em 1808 e abriu os portos. Ao voltar a Lisboa, deixou Pedro como regente.",pol:80,pop:55,ide:60},
+{n:"Lord Cochrane",e:"🚢",t:"Almirante da Marinha",d:"Marinheiro britânico contratado por Pedro I, comandou a esquadra brasileira e expulsou tropas portuguesas do Nordeste.",pol:60,pop:65,ide:50},
+{n:"Frei Caneca",e:"📖",t:"Líder republicano",d:"Religioso pernambucano, lutou pela República e pelo federalismo na Confederação do Equador. Foi fuzilado em 1825.",pol:40,pop:78,ide:94},
+{n:"Cortes de Lisboa",e:"🏰",t:"Parlamento português",d:"Exigiram a volta de Pedro a Portugal e tentaram recolonizar o Brasil, provocando a reação que levou à Independência.",pol:82,pop:30,ide:45},
+{n:"Maria Felipa",e:"🔥",t:"Heroína de Itaparica",d:"Mulher negra que liderou defensoras da ilha e incendiou embarcações portuguesas na Bahia.",pol:20,pop:92,ide:75}
+]}
+];
+
+var $=function(id){return document.getElementById(id)};
+var DIFFS=[
+  {id:"facil",n:"😊 Fácil",d:"O Bot escolhe o atributo de forma 100% aleatória."},
+  {id:"medio",n:"😐 Médio",d:"O Bot escolhe o atributo de maior valor da carta dele."},
+  {id:"dificil",n:"😈 Difícil",d:"O Bot analisa sua carta e escolhe o atributo com maior chance de vencer."}
+];
+var st={theme:null,diff:"medio",turn:"p",hp:{p:5,b:5},pileP:[],pileB:[],cp:null,cb:null,round:0,locked:true};
+
+function attrName(k){return ATTRS.filter(function(x){return x.k===k})[0].n}
+function randOf(a){return a[Math.floor(Math.random()*a.length)]}
+
+/* Escolha do Bot conforme a dificuldade */
+function botPick(){
+  var keys=ATTRS.map(function(a){return a.k});
+  if(st.diff==="facil")return randOf(keys);
+  var score=function(k){return st.diff==="medio"?st.cb[k]:st.cb[k]-st.cp[k]};
+  var best=-Infinity,cands=[];
+  keys.forEach(function(k){
+    var s=score(k);
+    if(s>best){best=s;cands=[k]}else if(s===best){cands.push(k)}
+  });
+  return randOf(cands);
+}
+
+function shuffle(a){var r=a.slice();for(var i=r.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=r[i];r[i]=r[j];r[j]=t}return r}
+function show(id){document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active")});$(id).classList.add("active")}
+
+function buildMenu(){
+  var dc=$("diffs");dc.innerHTML="";
+  DIFFS.forEach(function(df){
+    var b=document.createElement("button");
+    b.className="diff"+(df.id===st.diff?" on":"");
+    b.innerHTML="<b>"+df.n+"</b><span>"+df.d+"</span>";
+    b.onclick=function(){
+      st.diff=df.id;
+      dc.querySelectorAll(".diff").forEach(function(x){x.classList.remove("on")});
+      b.classList.add("on");
+    };
+    dc.appendChild(b);
+  });
+  var c=$("themes");c.innerHTML="";
+  THEMES.forEach(function(t){
+    var d=document.createElement("div");d.className="theme";d.tabIndex=0;
+    d.innerHTML='<div class="em">'+t.em+'</div><h3>'+t.name+'</h3><p>'+t.desc+'</p><p style="margin-top:10px;color:#d4a84b">10 cartas</p>';
+    d.onclick=function(){start(t)};
+    d.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();start(t)}};
+    c.appendChild(d);
+  });
+}
+
+function hearts(who){
+  var h="";for(var i=0;i<5;i++){h+='<span class="'+(i<st.hp[who]?"on":"off")+'">❤️</span>'}
+  $(who==="p"?"hpP":"hpB").innerHTML=h;
+}
+
+function draw(who){
+  var key=who==="p"?"pileP":"pileB";
+  if(!st[key].length)st[key]=shuffle(st.theme.cards);
+  return st[key].pop();
+}
+
+function cardHTML(c,pick,front){
+  var h='<div class="card '+(front?"front ":"")+(pick?"pick":"")+'"><div class="inner">';
+  h+='<div class="back">⚜</div><div class="face">';
+  h+='<div class="art">'+c.e+'</div><div class="cn">'+c.n+'</div><div class="ct">'+c.t+'</div><div class="cd">'+c.d+'</div><div class="attrs">';
+  ATTRS.forEach(function(a){
+    h+='<div class="at" data-k="'+a.k+'"><div class="r"><span>'+a.e+' '+a.n+'</span><span>'+c[a.k]+'</span></div><div class="bar"><i style="width:'+c[a.k]+'%"></i></div></div>';
+  });
+  return h+'</div></div></div></div>';
+}
+
+function start(t){
+  st.theme=t;st.hp={p:5,b:5};st.pileP=shuffle(t.cards);st.pileB=shuffle(t.cards);st.round=0;st.turn="p";
+  var dn=DIFFS.filter(function(x){return x.id===st.diff})[0].n;
+  $("themeName").textContent=t.name+" · "+dn;
+  $("modal").classList.remove("show");
+  show("sGame");
+  newRound();
+}
+
+function newRound(){
+  st.round++;st.locked=false;
+  st.cp=draw("p");
+  do{st.cb=draw("b")}while(st.cb===st.cp);
+  $("roundN").textContent=st.round;
+  hearts("p");hearts("b");
+  $("banner").innerHTML="";
+  $("btnNext").style.display="none";
+  var mine=st.turn==="p";
+  $("turnBadge").innerHTML=mine?'<span>🎯 Sua vez de escolher o atributo</span>':'<span class="bot">🤖 Vez do Bot escolher o atributo</span>';
+  $("cardP").innerHTML=cardHTML(st.cp,mine,true);
+  $("cardB").innerHTML=cardHTML(st.cb,false,false);
+  $("cardP").firstChild.classList.add("deal");
+  $("cardB").firstChild.classList.add("deal");
+  if(mine){
+    $("hint").textContent="Escolha um atributo da sua carta para batalhar!";
+    $("cardP").querySelectorAll(".at").forEach(function(el){
+      el.onclick=function(){choose(el.getAttribute("data-k"),false)};
+    });
+  }else{
+    $("hint").textContent="O Bot está escolhendo o atributo...";
+    var round=st.round,theme=st.theme;
+    setTimeout(function(){
+      if(st.theme!==theme||st.round!==round||st.locked)return;
+      choose(botPick(),true);
+    },1300);
+  }
+}
+
+function choose(k,byBot){
+  if(st.locked)return;
+  st.locked=true;
+  var pc=$("cardP").firstChild,bc=$("cardB").firstChild;
+  pc.classList.remove("pick");
+  pc.querySelector('[data-k="'+k+'"]').classList.add("sel");
+  bc.querySelector('[data-k="'+k+'"]').classList.add("sel");
+  var chooserRow=(byBot?bc:pc).querySelector('[data-k="'+k+'"] .r span');
+  chooserRow.innerHTML+='<small class="who'+(byBot?' bot':'')+'">'+(byBot?'🤖 Bot':'🎯 Você')+'</small>';
+  $("turnBadge").innerHTML=byBot?'<span class="bot">🤖 O Bot escolheu: '+attrName(k)+'</span>':'<span>🎯 Você escolheu: '+attrName(k)+'</span>';
+  $("hint").textContent=byBot?"O Bot escolheu "+attrName(k)+"! Revelando a carta dele...":"Revelando a carta do Bot...";
+  setTimeout(function(){
+    bc.classList.add("flipped");
+    setTimeout(function(){resolve(k,pc,bc)},800);
+  },400);
+}
+
+function resolve(k,pc,bc){
+  var a=st.cp[k],b=st.cb[k],res,cls,msg;
+  var ap=pc.querySelector('[data-k="'+k+'"]'),ab=bc.querySelector('[data-k="'+k+'"]');
+  var name=attrName(k),nxt;
+  if(a>b){res="win";st.hp.b--;msg="🏆 VITÓRIA";ap.classList.add("won");ab.classList.add("lost");pc.classList.add("glow")}
+  else if(a<b){res="lose";st.hp.p--;msg="💀 DERROTA";ap.classList.add("lost");ab.classList.add("won");bc.classList.add("glow")}
+  else{res="draw";msg="🤝 EMPATE";ap.classList.add("tie");ab.classList.add("tie")}
+  st.turn=st.turn==="p"?"b":"p";
+  nxt=st.turn==="p"?"Na próxima rodada é a sua vez de escolher.":"Na próxima rodada o Bot escolhe o atributo.";
+  $("banner").innerHTML='<span class="msg '+res+'">'+msg+'</span>';
+  $("hint").textContent=name+": "+a+" (você) × "+b+" (Bot)"+(res==="draw"?" — ninguém perde vida. ":res==="win"?" — o Bot perde 1 vida. ":" — você perde 1 vida. ")+(st.hp.p>0&&st.hp.b>0?nxt:"");
+  hearts("p");hearts("b");
+  if(res==="win"){$("hpB").classList.remove("hit");void $("hpB").offsetWidth;$("hpB").classList.add("hit")}
+  if(res==="lose"){$("hpP").classList.remove("hit");void $("hpP").offsetWidth;$("hpP").classList.add("hit")}
+  if(st.hp.p<=0||st.hp.b<=0){setTimeout(endGame,1800)}
+  else{$("btnNext").style.display="inline-block"}
+}
+
+function endGame(){
+  var w=st.hp.b<=0&&st.hp.p>0;
+  var box=$("box");
+  box.className="box "+(w?"v":"d");
+  $("endEm").textContent=w?"🏆":"💀";
+  $("endT").textContent=w?"VITÓRIA!":"DERROTA";
+  $("endP").textContent=w?"Você dominou o tema "+st.theme.name+" e derrotou o Bot em "+st.round+" rodadas!":"O Bot venceu esta batalha de "+st.theme.name+" em "+st.round+" rodadas. Tente novamente!";
+  $("modal").classList.add("show");
+}
+
+$("btnNext").onclick=newRound;
+$("btnMenu").onclick=function(){show("sMenu")};
+$("btnMenu2").onclick=function(){$("modal").classList.remove("show");show("sMenu")};
+$("btnRestart").onclick=function(){start(st.theme)};
+
+buildMenu();
+})();
+</script>
+</body>
+</html>
